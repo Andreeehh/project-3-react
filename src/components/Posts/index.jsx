@@ -11,9 +11,9 @@ export const Posts = ({ posts = [] }) => (
   </div>
 );
 
-Posts.defaultProps = {
-  posts: [],
-};
+// Posts.defaultProps = { mesma coisa que posts = []
+//   posts: [],
+// };
 
 Posts.propTypes = {
   posts: P.arrayOf(

@@ -7,6 +7,7 @@ import { loadPosts } from '../../utils/load-post';
 import { Posts } from '../../components/Posts';
 import { Button } from '../../components/Button';
 import { TextInput } from '../../components/TextInput';
+import { act } from 'react-dom/test-utils';
 
 // export class Home extends Component {
 //   state = {
@@ -39,7 +40,7 @@ export const Home = () => {
   const [posts, setPosts] = useState([]);
   const [allPosts, setAllPosts] = useState([]);
   const [page, setPage] = useState(0);
-  const [postsPerPage] = useState(10);
+  const [postsPerPage] = useState(2);
   const [searchValue, setSearchValue] = useState('');
 
   const filteredPosts = searchValue
@@ -64,13 +65,17 @@ export const Home = () => {
     const nextPage = page + postsPerPage;
     const nextPosts = allPosts.slice(nextPage, nextPage + postsPerPage);
     posts.push(...nextPosts);
-    setPosts(posts);
-    setPage(nextPage);
+    act(() => {
+      setPosts(posts);
+      setPage(nextPage);
+    });
   };
 
   const handleChange = (e) => {
     const { value } = e.target;
-    setSearchValue(value);
+    act(() => {
+      setSearchValue(value);
+    });
   };
 
   return (
@@ -78,13 +83,13 @@ export const Home = () => {
       <div className="search-container">
         {!!searchValue && (
           <>
-            <h1>Seach value: {searchValue}</h1>
+            <h1>Search value: {searchValue}</h1>
           </>
         )}
         <TextInput searchValue={searchValue} handleChange={handleChange} />
       </div>
       {filteredPosts.length > 0 && <Posts posts={filteredPosts} />}
-      {filteredPosts.length === 0 && <p>Não existem posts</p>}
+      {filteredPosts.length === 0 && <p>Não existem posts =(</p>}
 
       <div className="button-container">
         {!searchValue && ( //se nao tiver busca, exibe o botão
