@@ -1,26 +1,34 @@
-import { useState } from 'react';
-import { useAsync } from './use-async';
-
-const fetchData = async () => {
-  const data = await fetch('https://jsonplaceholder.typicode.com/posts');
-  const json = await data.json();
-  return json;
-  // throw new Error('que chato');
-};
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 export const Home = () => {
-  const [posts, setPosts] = useState(null);
-  const [reFetchData, result, error, status] = useAsync(fetchData, true);
+  const [counted, setCounted] = useState([0, 1, 2, 3, 4]);
+  const divRef = useRef();
 
-  switch (status) {
-    case 'iddle':
-      return <pre>Nada executando</pre>;
-    case 'pending':
-      return <pre>Loading...</pre>;
-    case 'error':
-      return <pre>{error.message}</pre>;
-    case 'settled':
-      return <pre>{JSON.stringify(result, null, 2)}</pre>;
-  }
-  return <pre>IXII</pre>;
+  useLayoutEffect(() => {
+    const now = Date.now();
+    while (Date.now() < now + 1600);
+    divRef.current.scrollTop = divRef.current.scrollHeight;
+  });
+
+  const handleClick = () => {
+    setCounted((c) => [...c, +c.slice(-1) + 1]);
+  };
+
+  return (
+    <>
+      <button onClick={handleClick}>Count {counted.slice(-1)}</button>
+      <div
+        ref={divRef}
+        style={{
+          height: '100px',
+          width: '100px',
+          overflow: 'scroll',
+        }}
+      >
+        {counted.map((c) => {
+          return <p key={`c-${c}`}>{c}</p>;
+        })}
+      </div>
+    </>
+  );
 };
