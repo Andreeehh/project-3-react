@@ -1,56 +1,38 @@
-import { forwardRef, useEffect, useImperativeHandle, useLayoutEffect, useRef, useState } from 'react';
+import { useDebugValue, useEffect, useState } from 'react';
 
-export const Home = () => {
-  const [counted, setCounted] = useState([0, 1, 2, 3, 4]);
-  const divRef = useRef();
+const useMediaQuery = (queryValue, initialValue = false) => {
+  const [match, setMatch] = useState(initialValue);
 
-  useLayoutEffect(() => {
-    const now = Date.now();
-    while (Date.now() < now + 1600);
-    divRef.current.divRef.scrollTop = divRef.current.divRef.scrollHeight;
+  useDebugValue(`Query: ${queryValue}`, (name) => {
+    return name + ' modificado';
   });
 
-  const handleClick = () => {
-    setCounted((c) => [...c, +c.slice(-1) + 1]);
-    divRef.current.handleClick();
-  };
+  useEffect(() => {
+    let isMounted = true;
+    const matchMedia = window.matchMedia(queryValue);
 
-  return (
-    <>
-      <button onClick={handleClick}>Count {counted.slice(-1)}</button>
-      <DisplayCounted counted={counted} ref={divRef}></DisplayCounted>
-    </>
-  );
+    const handleChange = () => {
+      if (!isMounted) return;
+      setMatch(!!matchMedia.matches);
+    };
+
+    matchMedia.addEventListener('change', handleChange);
+    setMatch(!!matchMedia.matches);
+
+    return () => {
+      isMounted = false;
+      matchMedia.removeEventListener('change', handleChange);
+    };
+  }, [queryValue]);
+
+  return match;
 };
 
-//para passar um useRef como propriedade, vc deve passar o componente como function dentro do forwardRef, passando como segundo parâmetro
-export const DisplayCounted = forwardRef(function DisplayCounted({ counted }, ref) {
-  const [rand, setRand] = useState('0.24');
-  const divRef = useRef();
-
-  const handleClick = () => {
-    setRand(Math.random().toFixed(2));
-  };
-
-  //passa pra ref recebida por parâmetro de volta pra pai com um objeto com o handleClick do filho e o divRef do filho, que era o divRef do pai, loucura
-  useImperativeHandle(ref, () => ({ handleClick, divRef: divRef.current }));
-
-  return (
-    <div
-      ref={divRef}
-      style={{
-        height: '100px',
-        width: '100px',
-        overflow: 'scroll',
-      }}
-    >
-      {counted.map((c) => {
-        return (
-          <p onClick={handleClick} key={`c-${c}`}>
-            {c} +++ {rand}
-          </p>
-        );
-      })}
-    </div>
-  );
-});
+export const Home = () => {
+  const huge = useMediaQuery('(min-width: 980px)');
+  const big = useMediaQuery('(max-width: 979px) and (min-width: 768px)');
+  const medium = useMediaQuery('(max-width: 767px) and (min-width: 321px)');
+  const small = useMediaQuery('(max-width: 321px)');
+  const background = huge ? 'green' : big ? 'red' : medium ? 'yellow ' : small ? 'purple' : null;
+  return <div style={{ fontSize: '60px', background }}>OI</div>;
+};
