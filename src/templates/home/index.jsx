@@ -1,56 +1,19 @@
-import { Children, Component, createContext, useContext } from 'react';
-import { cloneElement } from 'react';
-import { useEffect } from 'react';
-import { useState } from 'react';
-
-const s = {
-  style: {
-    fontSize: '60px',
-  },
-};
-
-const TurnOnOffContext = createContext();
-
-const TurnOnOff = ({ children }) => {
-  const [isOn, setIsOn] = useState(false);
-  const onTurn = () => setIsOn((s) => !s);
-
-  return <TurnOnOffContext.Provider value={{ isOn, onTurn }}>{children}</TurnOnOffContext.Provider>;
-};
-
-//Compound components, para poder passar funções no cloneElement do Children.map
-const TurnedOn = ({ children }) => {
-  const { isOn } = useContext(TurnOnOffContext);
-  return isOn ? children : null;
-};
-const TurnedOff = ({ children }) => {
-  const { isOn } = useContext(TurnOnOffContext);
-  return isOn ? null : children;
-};
-const TurnButton = ({ ...props }) => {
-  const { isOn, onTurn } = useContext(TurnOnOffContext);
-  return (
-    <button {...props} onClick={onTurn}>
-      Turn {isOn ? 'OFF' : 'ON'}
-    </button>
-  );
-};
-
-const P = ({ children }) => <p {...s}>{children}</p>;
+import { lazy, Suspense, useState } from 'react';
+// import LazyComponent from './lazy-component';
+//colocando a importação numa função, e passando essa função para o React.lazy, vc só importa esse component quando ela for chamada ou o componente for chamado pra tela, ou show == true. Porém vc tem q colocar o component como export default, e também escrever ele dentro de um suspense com um fallback que exibira enquanto ele ainda nao foi importado
+const loadComponent = () => import('./lazy-component');
+const LazyComponent = lazy(loadComponent);
 
 export const Home = () => {
+  const [show, setShow] = useState(false);
   return (
-    <TurnOnOff>
-      <div>
-        <TurnedOn>
-          <P>Aqui as coisa que vão acontecer quando estiver ON</P>
-        </TurnedOn>
-        <TurnedOff>
-          <P>Aqui vem as coisas do off</P>
-        </TurnedOff>
-        <p>Oi</p>
-        <TurnButton {...s} />
-      </div>
-    </TurnOnOff>
+    <div>
+      <p>
+        <button onMouseOver={loadComponent} onClick={() => setShow((s) => !s)}>
+          Show {show ? 'LC on screen' : 'LC is off screen'}
+        </button>
+      </p>
+      <Suspense fallback={<p>Carregando...</p>}>{show && <LazyComponent />}</Suspense>
+    </div>
   );
 };
