@@ -9,20 +9,48 @@ const s = {
   },
 };
 
-//Children e cloneElement são utilizados para manipular os elementos do dom recebidos por parâmetro como children, já que seus prop-types são imutáveis, então utilizando o Children.map que recebe o parâmetro, faz com que para cada child, vc possa clonar o elemento e passar propriedades, como style, que é o caso desse spread object, id, key, qualquer uma menos uma função
-const Parent = ({ children }) => {
-  console.log(children);
+const TurnOnOff = ({ children }) => {
+  const [isOn, setIsOn] = useState(false);
+  const onTurn = () => setIsOn((s) => !s);
+
   return Children.map(children, (child) => {
-    const newChild = cloneElement(child, { ...s });
+    //retorna o próprio child caso o elemento não seja um compound components, no caso é o <p>Oi</p>
+    if (typeof child.type === 'string') {
+      return child;
+    }
+
+    const newChild = cloneElement(child, {
+      isOn,
+      onTurn,
+    });
     return newChild;
   });
 };
 
+//Compound components, para poder passar funções no cloneElement do Children.map
+const TurnedOn = ({ isOn, children }) => (isOn ? children : null);
+const TurnedOff = ({ isOn, children }) => (isOn ? null : children);
+const TurnButton = ({ isOn, onTurn, ...props }) => {
+  return (
+    <button {...props} onClick={onTurn}>
+      Turn {isOn ? 'OFF' : 'ON'}
+    </button>
+  );
+};
+
+const P = ({ children }) => <p {...s}>{children}</p>;
+
 export const Home = () => {
   return (
-    <Parent>
+    <TurnOnOff>
+      <TurnedOn>
+        <P>Aqui as coisa que vão acontecer quando estiver ON</P>
+      </TurnedOn>
+      <TurnedOff>
+        <P>Aqui vem as coisas do off</P>
+      </TurnedOff>
       <p>Oi</p>
-      <p>Oi 2</p>
-    </Parent>
+      <TurnButton {...s} />
+    </TurnOnOff>
   );
 };
